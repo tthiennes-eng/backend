@@ -81,5 +81,5 @@ public class TreatmentPlansController : ControllerBase
     }
 }
 
-public record CreateTreatmentPlanRequest(Guid PatientId, string Description);
+public record CreateTreatmentPlanRequest(int PatientId, string Description);
 public record AddTreatmentItemRequest(Guid ProcedureId, string ProcedureName, decimal Value, int? ToothNumber);
