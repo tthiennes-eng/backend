@@ -29,7 +29,7 @@ public class AnexoConfiguration : IEntityTypeConfiguration<Anexo>
 
         // Configura o relacionamento com Patient (chave estrangeira int)
         builder.HasOne(a => a.Paciente)
-            .WithMany()
+            .WithMany(p => p.Anexos)
             .HasForeignKey(a => a.PacienteId)
             .OnDelete(DeleteBehavior.Restrict);
 
