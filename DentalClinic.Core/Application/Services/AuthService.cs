@@ -1,170 +1,109 @@
-using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
+using DentalClinic.Core.Application.DTOs;
+using DentalClinic.Core.Application.Interfaces;
+using DentalClinic.Core.Common;
 using DentalClinic.Core.Domain.Entities;
 using DentalClinic.Core.Domain.Repositories;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
 
-namespace DentalClinic.Core.Application.Services
+namespace DentalClinic.Core.Application.Services;
+
+/// <summary>
+/// Implementação sênior do serviço de autenticação.
+/// Gerencia login, revogação de sessões e renovação de tokens (Refresh Token).
+/// </summary>
+public class AuthService : IAuthService
 {
-    public class AuthService : IAuthService
+    private readonly IUserRepository _userRepository;
+    private readonly IUserSessionRepository _sessionRepository;
+    private readonly IPasswordHasher _passwordHasher;
+    private readonly ITokenService _tokenService;
+    private readonly IConfiguration _configuration;
+
+    public AuthService(
+        IUserRepository userRepository,
+        IUserSessionRepository sessionRepository,
+        IPasswordHasher passwordHasher,
+        ITokenService tokenService,
+        IConfiguration configuration)
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IConfiguration _configuration;
+        _userRepository = userRepository;
+        _sessionRepository = sessionRepository;
+        _passwordHasher = passwordHasher;
+        _tokenService = tokenService;
+        _configuration = configuration;
+    }
 
-        public AuthService(IUserRepository userRepository, IConfiguration configuration)
+    public async Task<Result<TokenDto>> AuthenticateAsync(LoginDto loginDto)
+    {
+        var user = await _userRepository.GetByEmailAsync(loginDto.Email);
+
+        if (user == null || !user.CanAccess())
         {
-            _userRepository = userRepository;
-            _configuration = configuration;
+            return Result<TokenDto>.Failure("Usuário não encontrado ou inativo.");
         }
 
-        public async Task<(string accessToken, string refreshToken, UserDto userDto)?> AuthenticateAsync(string email, string password)
+        bool isPasswordValid = _passwordHasher.VerifyPassword(loginDto.Password, user.PasswordHash);
+
+        if (!isPasswordValid)
         {
-            // 1. Buscar usuário por Email (a propriedade agora é "Email", não "EmailAddress")
-            var user = await _userRepository.GetByEmailAsync(email);
-
-            if (user == null)
-            {
-                return null; // Usuário não encontrado
-            }
-
-            // 2. Verificar se o usuário está ativo (Status 0 = Active)
-            if (user.Status != 0) 
-            {
-                return null; // Usuário bloqueado ou inativo
-            }
-
-            // 3. Validar a senha usando BCrypt
-            if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
-            {
-                // Incrementar tentativas falhas (lógica simplificada)
-                user.FailedLoginAttempts++;
-                if (user.FailedLoginAttempts >= 5)
-                {
-                    user.Status = 1; // Bloquear
-                    user.BlockedAt = DateTime.UtcNow;
-                }
-                await _userRepository.UpdateAsync(user);
-                return null; // Senha incorreta
-            }
-            }
-
-            // 4. Login bem sucedido: Resetar contadores e atualizar data
-            user.FailedLoginAttempts = 0;
-            user.LastLoginAt = DateTime.UtcNow;
-            user.BlockedAt = null;
-            // Se estava bloqueado mas a senha estava certa (caso raro de desbloqueio manual), mantém status
-            // Mas se o status foi definido como bloqueado acima, ele permanece. 
-            // Normalmente, se chegou aqui, o status já foi checado no passo 2.
-            
+            user.RegisterFailedLoginAttempt();
             await _userRepository.UpdateAsync(user);
-
-            // 5. Gerar Tokens
-            var accessToken = GenerateAccessToken(user);
-            var refreshToken = GenerateRefreshToken();
-
-            // 6. Criar DTO de retorno
-            var userDto = new UserDto
-            {
-                Id = user.Id,
-                Name = user.Name,
-                Email = user.Email, // Usando a propriedade correta
-                Role = user.Role    // Usando a propriedade correta
-            };
-            
-            return (accessToken, refreshToken, userDto);
+            return Result<TokenDto>.Failure("Credenciais inválidas.");
         }
 
-        public async Task<bool> RefreshTokenAsync(string refreshToken, string currentAccessToken)
+        user.RegisterSuccessfulLogin();
+        await _userRepository.UpdateAsync(user);
+
+        var accessToken = _tokenService.GenerateAccessToken(user);
+        var refreshToken = _tokenService.GenerateRefreshToken();
+
+        // Persiste a sessão para controle de Refresh Token (Segurança LGPD)
+        var expiryDays = int.Parse(_configuration["Jwt:RefreshTokenExpirationDays"] ?? "7");
+        var session = UserSession.Create(user.Id, refreshToken, expiryDays, "0.0.0.0"); // Em produção, capturar IP real
+        await _sessionRepository.AddAsync(session);
+
+        var userDto = new UserDto(user.Id, user.Name, user.EmailAddress.Value, user.Roles.First().ToString());
+
+        return Result<TokenDto>.Ok(new TokenDto(accessToken, refreshToken, userDto));
+    }
+
+    public async Task<Result<TokenDto>> RefreshTokenAsync(RefreshTokenRequest request)
+    {
+        var session = await _sessionRepository.GetByTokenAsync(request.RefreshToken);
+
+        if (session == null || !session.IsActive)
         {
-            // Implementação simplificada: Em produção, valide o refresh token no banco
-            // Aqui apenas verificamos se o token atual é válido para extrair o usuário
-            // Para um exemplo funcional imediato, retornaremos true se o token atual for válido.
-            
-            try 
-            {
-                var principal = GetPrincipalFromExpiredToken(currentAccessToken);
-                if (principal == null) return false;
-
-                var email = principal.FindFirstValue(ClaimTypes.Email);
-                if (string.IsNullOrEmpty(email)) return false;
-
-                var user = await _userRepository.GetByEmailAsync(email);
-                if (user == null || user.Status != 0) return false;
-
-                // Aqui você validaria o refreshToken contra o banco de dados
-                // Por enquanto, assumimos que é válido para fins de teste
-                
-                return true;
-            }
-            catch 
-            {
-                return false;
-            }
+            return Result<TokenDto>.Failure("Sessão inválida ou expirada.");
         }
 
-        private string GenerateAccessToken(User user)
+        var user = await _userRepository.GetByIdAsync(session.UserId);
+        if (user == null || !user.CanAccess())
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Name),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim("Role", user.Role), // Claim personalizada para o Role
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
-
-            var expirationMinutes = _configuration.GetValue<int>("Jwt:AccessTokenExpirationMinutes");
-            
-            var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(expirationMinutes),
-                signingCredentials: credentials
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return Result<TokenDto>.Failure("Usuário não autorizado.");
         }
 
-        private string GenerateRefreshToken()
-        {
-            return Guid.NewGuid().ToString() + "-" + Guid.NewGuid().ToString();
-        }
-        
-        private ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
-        {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            
-            var tokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateAudience = true,
-                ValidateIssuer = true,
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = key,
-                ValidateLifetime = false, // Importante: ignorar expiração para refresh
-                ClockSkew = TimeSpan.Zero,
-                ValidIssuer = _configuration["Jwt:Issuer"],
-                ValidAudience = _configuration["Jwt:Audience"]
-            };
+        // Revoga a sessão atual (Refresh Token Rotation para segurança extra)
+        session.Revoke();
+        await _sessionRepository.UpdateAsync(session);
 
-            var tokenHandler = new JwtSecurityTokenHandler();
-            
-            try 
-            {
-                var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out _);
-                return principal;
-            }
-            catch 
-            {
-                return null;
-            }
+        // Gera novo par de tokens
+        var newAccessToken = _tokenService.GenerateAccessToken(user);
+        var newRefreshToken = _tokenService.GenerateRefreshToken();
+
+        var expiryDays = int.Parse(_configuration["Jwt:RefreshTokenExpirationDays"] ?? "7");
+        var newSession = UserSession.Create(user.Id, newRefreshToken, expiryDays, session.CreatedByIp);
+        await _sessionRepository.AddAsync(newSession);
+
+        var userDto = new UserDto(user.Id, user.Name, user.EmailAddress.Value, user.Roles.First().ToString());
+
+        return Result<TokenDto>.Ok(new TokenDto(newAccessToken, newRefreshToken, userDto));
+    }
+
+    public async Task RevokeTokenAsync(string userId)
+    {
+        if (Guid.TryParse(userId, out var guid))
+        {
+            await _sessionRepository.RevokeAllUserSessionsAsync(guid);
         }
     }
 }
