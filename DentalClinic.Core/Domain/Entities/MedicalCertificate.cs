@@ -5,7 +5,7 @@ namespace DentalClinic.Core.Domain.Entities;
 /// </summary>
 public sealed class MedicalCertificate : Entity
 {
-    public Guid PatientId { get; private set; }
+    public int PatientId { get; private set; }
     public Patient Patient { get; private set; } = null!;
 
     public Guid DoctorId { get; private set; }
@@ -19,7 +19,7 @@ public sealed class MedicalCertificate : Entity
     private MedicalCertificate() { }
 
     public static MedicalCertificate Create(
-        Guid patientId,
+        int patientId,
         Guid doctorId,
         Guid clinicId,
         string content,
