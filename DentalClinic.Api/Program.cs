@@ -74,14 +74,22 @@ builder.Services.AddAuthentication(x =>
     };
 });
 
-// 6. Configuração de CORS para o Flutter
+// 6. Configuração de CORS para o Flutter (CORRIGIDO)
+// Não podemos usar AllowAnyOrigin() junto com AllowCredentials()
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFlutter",
-        policy => policy.WithOrigins("http://localhost:3000", "http://localhost:5173", "http://localhost:8080")
-                        .AllowAnyMethod()
-                        .AllowAnyHeader()
-                        .AllowCredentials()); // Necessário para SignalR
+    options.AddPolicy("AllowFlutter", policy =>
+    {
+        policy.WithOrigins(
+                "http://localhost",
+                "http://localhost:5000",
+                "http://10.0.2.2",      // Emulador Android
+                "http://192.168.1.0"    // Rede local genérica (ajuste se necessário)
+            )
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials(); // Necessário para SignalR e Cookies
+    });
 });
 
 builder.Services.AddEndpointsApiExplorer();
@@ -115,11 +123,13 @@ var app = builder.Build();
 // 8. Middleware Pipeline
 app.UseMiddleware<ExceptionMiddleware>();
 
-if (app.Environment.IsDevelopment())
+// Swagger sempre habilitado para desenvolvimento e testes
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "OdontoClinica API V1");
+    c.RoutePrefix = string.Empty; // Define / como padrão ao invés de /swagger
+});
 
 app.UseStaticFiles();
 app.UseHttpsRedirection();
