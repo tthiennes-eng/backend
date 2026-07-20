@@ -9,7 +9,7 @@ public sealed class TreatmentPlan : Entity
     public Guid PatientId { get; private set; }
     public Patient Patient { get; private set; } = null!;
 
-    public string Description { get; private set; } = null!;
+    public string Description { get; private set; } = string.Empty;
 
     public List<TreatmentItem> Items { get; private set; } = new();
 

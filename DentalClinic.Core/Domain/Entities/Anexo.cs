@@ -9,9 +9,9 @@ public sealed class Anexo : Entity
     public Guid PacienteId { get; private set; }
     public Patient Paciente { get; private set; } = null!;
 
-    public string Nome { get; private set; }
-    public string Tipo { get; private set; } // 'Radiografia', 'Foto', 'Documento'
-    public string Url { get; private set; }
+    public string Nome { get; private set; } = string.Empty;
+    public string Tipo { get; private set; } = string.Empty; // 'Radiografia', 'Foto', 'Documento'
+    public string Url { get; private set; } = string.Empty;
     public long Tamanho { get; private set; }
 
     public Guid CriadoPorId { get; private set; }

@@ -12,7 +12,7 @@ public sealed class WaitListEntry : Entity
     public Clinic Clinic { get; private set; } = null!;
 
     public Specialty Specialty { get; private set; }
-    public string Priority { get; private set; } // 'Normal', 'Urgente', 'Prioritário'
+    public string Priority { get; private set; } = string.Empty; // 'Normal', 'Urgente', 'Prioritário'
     public string? Observation { get; private set; }
     public bool IsResolved { get; private set; }
 
