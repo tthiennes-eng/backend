@@ -32,7 +32,7 @@ public class ProntuarioController : ControllerBase
     /// Recupera o odontograma de um paciente.
     /// </summary>
     [HttpGet("{patientId}/odontogram")]
-    public async Task<IActionResult> GetOdontogram(Guid patientId)
+    public async Task<IActionResult> GetOdontogram(int patientId)
     {
         var odontogram = await _repository.GetOdontogramByPatientIdAsync(patientId);
         if (odontogram == null) return NotFound();
@@ -43,7 +43,7 @@ public class ProntuarioController : ControllerBase
     /// Salva ou atualiza o odontograma.
     /// </summary>
     [HttpPost("{patientId}/odontogram")]
-    public async Task<IActionResult> SaveOdontogram(Guid patientId, [FromBody] Odontogram odontogram)
+    public async Task<IActionResult> SaveOdontogram(int patientId, [FromBody] Odontogram odontogram)
     {
         if (patientId != odontogram.PatientId) return BadRequest();
         await _repository.SaveOdontogramAsync(odontogram);
@@ -54,7 +54,7 @@ public class ProntuarioController : ControllerBase
     /// Recupera o histórico de evoluções.
     /// </summary>
     [HttpGet("{patientId}/evolutions")]
-    public async Task<IActionResult> GetEvolutions(Guid patientId)
+    public async Task<IActionResult> GetEvolutions(int patientId)
     {
         var history = await _repository.GetEvolutionHistoryAsync(patientId);
         return Ok(history);

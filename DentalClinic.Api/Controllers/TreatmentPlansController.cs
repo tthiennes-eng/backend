@@ -27,7 +27,7 @@ public class TreatmentPlansController : ControllerBase
     /// Obtém o plano de tratamento ativo de um paciente.
     /// </summary>
     [HttpGet("active/{patientId}")]
-    public async Task<IActionResult> GetActive(Guid patientId)
+    public async Task<IActionResult> GetActive(int patientId)
     {
         var plan = await _repository.GetActivePlanByPatientIdAsync(patientId);
         if (plan == null) return NotFound();
