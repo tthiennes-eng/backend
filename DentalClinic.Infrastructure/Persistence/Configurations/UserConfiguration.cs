@@ -53,7 +53,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         });
 
         builder.Property(u => u.Roles)
-            .HasPostgresArrayConversion(); // Requires Npgsql.EntityFrameworkCore.PostgreSQL
+            .HasColumnType("jsonb");
 
         builder.Property(u => u.Status)
             .HasConversion<int>();
