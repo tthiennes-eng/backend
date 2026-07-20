@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DentalClinic.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+53a244e4415a4a00f3f3f38405802ec392490db4")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0ea608c029a60796c490cfb70cc1157c90d52209")]
 [assembly: System.Reflection.AssemblyProductAttribute("DentalClinic.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DentalClinic.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
