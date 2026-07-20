@@ -74,14 +74,21 @@ builder.Services.AddAuthentication(x =>
     };
 });
 
-// 6. Configuração de CORS para o Flutter
+// 6. Configuração de CORS para o Flutter e outras origens
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFlutter",
-        policy => policy.WithOrigins("http://localhost:3000", "http://localhost:5173", "http://localhost:8080")
-                        .AllowAnyMethod()
-                        .AllowAnyHeader()
-                        .AllowCredentials()); // Necessário para SignalR
+        policy => policy
+            .WithOrigins(
+                "http://localhost:3000",
+                "http://localhost:5173",
+                "http://localhost:8080",
+                "http://localhost:4200",
+                "flutter://localhost"
+            )
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials()); // Necessário para SignalR e autenticação
 });
 
 builder.Services.AddEndpointsApiExplorer();

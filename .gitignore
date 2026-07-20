@@ -1,1 +1,34 @@
-Nothing to output - the modified file 'DentalClinic.Api/Program.cs' is a source code file and no build artifacts, dependencies, or temporary files were detected in the changes.
+```
+# Dependencies
+node_modules/
+packages/
+
+# Build outputs
+bin/
+obj/
+Debug/
+Release/
+.vs/
+*.userprefs
+
+# Logs
+*.log
+
+# Environment specific
+.env
+.env.local
+*.user
+*.suo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# NuGet
+packages/
+*.nupkg
+```
