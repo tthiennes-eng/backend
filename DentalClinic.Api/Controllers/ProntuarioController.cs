@@ -88,7 +88,7 @@ public class ProntuarioController : ControllerBase
     /// Atualiza o status de um item do plano de tratamento (ex: marcar como concluído).
     /// </summary>
     [HttpPatch("plans/{planId}/items/{itemId}/status")]
-    public async Task<IActionResult> UpdateItemStatus(Guid planId, Guid itemId, [FromBody] UpdateStatusRequest request)
+    public async Task<IActionResult> UpdateItemStatus(Guid planId, Guid itemId, [FromBody] TreatmentItemStatusRequest request)
     {
         var plan = await _planRepository.GetByIdAsync(planId);
         if (plan == null) return NotFound();
@@ -104,4 +104,4 @@ public class ProntuarioController : ControllerBase
     }
 }
 
-public record UpdateStatusRequest(string Status);
+public record TreatmentItemStatusRequest(string Status);
