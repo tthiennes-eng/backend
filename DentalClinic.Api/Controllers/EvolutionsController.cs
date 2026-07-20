@@ -57,4 +57,4 @@ public class EvolutionsController : ControllerBase
     }
 }
 
-public record CreateEvolutionRequest(Guid PatientId, string Description, Guid ProfessorId, Guid ClinicId);
+public record CreateEvolutionRequest(int PatientId, string Description, Guid ProfessorId, Guid ClinicId);
