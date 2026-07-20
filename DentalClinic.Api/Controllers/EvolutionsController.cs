@@ -39,7 +39,7 @@ public class EvolutionsController : ControllerBase
             request.PatientId,
             request.Description,
             request.ProfessorId,
-            Guid.Parse(currentUserId));
+            new Guid(currentUserId));
 
         return Ok(new { message = "Evolução registrada com sucesso." });
     }

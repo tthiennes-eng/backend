@@ -43,7 +43,7 @@ public class TreatmentPlansController : ControllerBase
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-        var plan = TreatmentPlan.Create(request.PatientId, Guid.Parse(userId), request.Description);
+        var plan = TreatmentPlan.Create(request.PatientId, new Guid(userId), request.Description);
         await _repository.AddAsync(plan);
 
         return CreatedAtAction(nameof(GetActive), new { patientId = plan.PatientId }, plan);
