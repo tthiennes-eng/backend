@@ -10,22 +10,22 @@ public sealed class User : Entity
     /// <summary>
     /// Nome completo do usuário.
     /// </summary>
-    public string Name { get; private set; }
+    public string Name { get; private set; } = string.Empty;
 
     /// <summary>
     /// Email do usuário (Value Object).
     /// </summary>
-    public Email EmailAddress { get; private set; }
+    public Email EmailAddress { get; private set; } = null!;
 
     /// <summary>
     /// Hash da senha armazenado (BCrypt).
     /// </summary>
-    public string PasswordHash { get; private set; }
+    public string PasswordHash { get; private set; } = string.Empty;
 
     /// <summary>
     /// CPF do usuário (Value Object).
     /// </summary>
-    public CPF CPF { get; private set; }
+    public CPF CPF { get; private set; } = null!;
 
     /// <summary>
     /// Data de nascimento.
@@ -35,17 +35,17 @@ public sealed class User : Entity
     /// <summary>
     /// Telefone de contato.
     /// </summary>
-    public string Phone { get; private set; }
+    public string Phone { get; private set; } = string.Empty;
 
     /// <summary>
     /// Endereço (Value Object).
     /// </summary>
-    public Address Address { get; private set; }
+    public Address Address { get; private set; } = null!;
 
     /// <summary>
     /// Papéis do usuário.
     /// </summary>
-    public List<UserRole> Roles { get; private set; }
+    public List<UserRole> Roles { get; private set; } = new();
 
     /// <summary>
     /// Status do usuário.

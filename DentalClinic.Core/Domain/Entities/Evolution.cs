@@ -17,7 +17,7 @@ public sealed class Evolution : Entity
     public Guid ClinicId { get; private set; }
     public Clinic Clinic { get; private set; } = null!;
 
-    public string Description { get; private set; }
+    public string Description { get; private set; } = string.Empty;
     public bool IsSignedByProfessor { get; private set; }
     public DateTime? SignedAt { get; private set; }
 

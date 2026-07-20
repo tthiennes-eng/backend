@@ -24,7 +24,8 @@ namespace DentalClinic.Core.Domain.Entities
         public DateTime? UpdatedAt { get; set; }
 
         // Relacionamentos
-        public ICollection<Evolution>? Evolutions { get; set; }
-        public ICollection<TreatmentItem>? TreatmentItems { get; set; }
+        public ICollection<Evolution>? Evolutions { get; set; } = new List<Evolution>();
+        public ICollection<TreatmentItem>? TreatmentItems { get; set; } = new List<TreatmentItem>();
+        public ICollection<Attachment>? Attachments { get; set; } = new List<Attachment>();
     }
 }

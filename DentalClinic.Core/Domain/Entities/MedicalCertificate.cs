@@ -11,9 +11,9 @@ public sealed class MedicalCertificate : Entity
     public Guid DoctorId { get; private set; }
     public User Doctor { get; private set; } = null!;
 
-    public string Content { get; private set; } = null!;
+    public string Content { get; private set; } = string.Empty;
     public int DaysOfRest { get; private set; }
-    public string CID { get; private set; } = null!;
+    public string CID { get; private set; } = string.Empty;
     public Guid ClinicId { get; private set; }
 
     private MedicalCertificate() { }
