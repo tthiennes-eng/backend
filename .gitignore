@@ -1,1 +1,54 @@
-Nothing needs to be added to .gitignore since the changes only include source code files (.cs files) and no build artifacts, dependencies, or temporary files.
+```
+# Compiled and binary files
+*.exe
+*.dll
+*.so
+*.a
+*.obj
+*.out
+*.pdb
+*.ilk
+
+# Dependencies
+packages/
+bin/
+obj/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# Logs and temp files
+*.log
+*.tmp
+*.temp
+*.cache
+
+# Environment
+.env
+.env.local
+.env.*
+
+# Editors
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build outputs
+Debug/
+Release/
+x64/
+x86/
+build/
+dist/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Testing
+TestResults/
+```
