@@ -78,6 +78,7 @@ namespace DentalClinic.Core.Domain.Entities
         public ICollection<Appointment>? Appointments { get; set; }
         public ICollection<MedicalRecord>? MedicalRecords { get; set; }
         public ICollection<Attachment>? Attachments { get; set; }
+        public ICollection<Anexo>? Anexos { get; set; }
 
         // Método auxiliar para idade
         public int GetAge()
