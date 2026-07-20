@@ -8,7 +8,7 @@ public sealed class Procedure : Entity
     public string Name { get; private set; } = string.Empty;
     public string Code { get; private set; } = string.Empty; // TUSS ou Código Interno
     public decimal BaseValue { get; private set; }
-    public Specialty Specialty { get; private set; } = null!;
+    public Specialty? Specialty { get; private set; }
     public int EstimatedTimeMinutes { get; private set; }
 
     private Procedure() { }
