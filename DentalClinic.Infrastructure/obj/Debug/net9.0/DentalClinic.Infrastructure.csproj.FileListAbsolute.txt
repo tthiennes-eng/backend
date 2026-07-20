@@ -1,0 +1,6 @@
+C:\Users\Thiago\AndroidStudioProjects\promtuario\backend\DentalClinic.Infrastructure\obj\Debug\net9.0\DentalClinic.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\Thiago\AndroidStudioProjects\promtuario\backend\DentalClinic.Infrastructure\obj\Debug\net9.0\DentalClinic.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Thiago\AndroidStudioProjects\promtuario\backend\DentalClinic.Infrastructure\obj\Debug\net9.0\DentalClinic.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\Thiago\AndroidStudioProjects\promtuario\backend\DentalClinic.Infrastructure\obj\Debug\net9.0\DentalClinic.Infrastructure.AssemblyInfo.cs
+C:\Users\Thiago\AndroidStudioProjects\promtuario\backend\DentalClinic.Infrastructure\obj\Debug\net9.0\DentalClinic.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\Thiago\AndroidStudioProjects\promtuario\backend\DentalClinic.Infrastructure\obj\Debug\net9.0\DentalClinic.Infrastructure.sourcelink.json
