@@ -4,9 +4,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DentalClinic.Infrastructure.Persistence.Repositories;
 
-/// <summary>
-/// Implementação do repositório de pacientes utilizando Entity Framework Core.
-/// </summary>
 public class PatientRepository : IPatientRepository
 {
     private readonly ApplicationDbContext _context;
@@ -35,7 +32,7 @@ public class PatientRepository : IPatientRepository
         }
 
         return await query
-            .OrderBy(p => p.FullName)
+            .OrderByDescending(p => p.CreatedAt) // Mostra os mais recentes primeiro
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -43,6 +40,12 @@ public class PatientRepository : IPatientRepository
 
     public async Task AddAsync(Patient patient)
     {
+        // Se o Id vier vazio do Flutter (improvável), gera um novo
+        if (patient.Id == Guid.Empty)
+        {
+            patient.Id = Guid.NewGuid();
+        }
+
         await _context.Patients.AddAsync(patient);
         await _context.SaveChangesAsync();
     }
@@ -73,11 +76,11 @@ public class PatientRepository : IPatientRepository
         var patient = await GetByIdAsync(id);
         if (patient != null)
         {
-            patient.FullName = "Paciente Anonimizado";
-            patient.Email = $"anonimo_{patient.Id}@anonimo.com";
-            patient.Phone = "***";
-            patient.IsActive = false;
-            patient.UpdatedAt = DateTime.UtcNow;
+            patient.FullName = "PACIENTE ANONIMIZADO (LGPD)";
+            patient.CPF = "00000000000";
+            patient.Email = "anonimo@odontoclinica.edu.br";
+            patient.Phone = "0000000000";
+            patient.Address = null;
             
             await UpdateAsync(patient);
         }

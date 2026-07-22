@@ -5,7 +5,7 @@ namespace DentalClinic.Core.Domain.Entities;
 
 public sealed class Appointment : Entity
 {
-    public Guid PatientId { get; private set; } // Alterado de int para Guid
+    public Guid PatientId { get; private set; }
     public Patient Patient { get; private set; } = null!;
 
     public Guid DoctorId { get; private set; }
@@ -51,4 +51,14 @@ public sealed class Appointment : Entity
         Status = status;
         UpdatedAt = DateTime.UtcNow;
     }
+}
+
+public enum AppointmentStatus
+{
+    Scheduled = 1,
+    Confirmed = 2,
+    InProgress = 3,
+    Completed = 4,
+    Cancelled = 5,
+    Missed = 6
 }

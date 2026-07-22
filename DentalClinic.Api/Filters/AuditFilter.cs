@@ -6,6 +6,9 @@ using System.Text.Json;
 
 namespace DentalClinic.Api.Filters;
 
+/// <summary>
+/// Filtro global de auditoria para conformidade com a LGPD.
+/// </summary>
 public class AuditFilter : IAsyncActionFilter
 {
     private readonly ApplicationDbContext _context;
@@ -21,27 +24,29 @@ public class AuditFilter : IAsyncActionFilter
     {
         var resultContext = await next();
 
-        var userId = context.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userId)) return;
+        var userIdClaim = context.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            return;
 
         var path = context.HttpContext.Request.Path.ToString();
         var method = context.HttpContext.Request.Method;
 
+        // Registra apenas ações de escrita ou acessos a dados sensíveis
         if (method != "GET" || path.Contains("prontuario") || path.Contains("odontogram"))
         {
             try
             {
                 var auditLog = new DentalClinic.Core.Domain.Entities.LogAuditoria
                 {
-                    Usuario = userId,
+                    UsuarioId = userId,
                     Acao = $"{method} {path}",
-                    Tabela = path.Split('/').Skip(2).FirstOrDefault() ?? "API",
-                    IpOrigem = context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    Recurso = path.Split('/').Skip(2).FirstOrDefault() ?? "API",
+                    IpAddress = context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1",
                     DataHora = DateTime.UtcNow,
-                    DadosNovos = JsonSerializer.Serialize(new
+                    Detalhes = JsonSerializer.Serialize(new
                     {
-                        Query = context.HttpContext.Request.QueryString.ToString(),
-                        StatusCode = context.HttpContext.Response.StatusCode
+                        StatusCode = context.HttpContext.Response.StatusCode,
+                        Query = context.HttpContext.Request.QueryString.ToString()
                     })
                 };
 
@@ -50,7 +55,7 @@ public class AuditFilter : IAsyncActionFilter
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("Audit bypass: {msg}", ex.Message);
+                _logger.LogWarning("Falha silenciosa na auditoria: {Message}", ex.Message);
             }
         }
     }

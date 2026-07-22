@@ -7,33 +7,29 @@ namespace DentalClinic.Core.Domain.Entities;
 
 public class Patient : Entity
 {
-    // O ID já vem da classe base Entity como Guid
-
     [Required]
-    [MaxLength(150)]
+    [MaxLength(255)]
     public string FullName { get; set; } = string.Empty;
 
     [Required]
     [MaxLength(14)]
     public string CPF { get; set; } = string.Empty;
 
-    [MaxLength(20)]
-    public string? RG { get; set; }
-
     [Required]
     [EmailAddress]
-    [MaxLength(100)]
+    [MaxLength(255)]
     public string Email { get; set; } = string.Empty;
 
     [Required]
     [MaxLength(20)]
     public string Phone { get; set; } = string.Empty;
 
-    [MaxLength(50)]
-    public string? Gender { get; set; }
-
     public DateTime BirthDate { get; set; }
 
+    [MaxLength(1)]
+    public string? Gender { get; set; }
+
+    // Endereço mapeado como JSONB
     public Address? Address { get; set; }
 
     public bool LgpdConsent { get; set; }

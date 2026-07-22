@@ -9,7 +9,7 @@ namespace DentalClinic.Core.Domain.Entities;
 /// </summary>
 public sealed class TreatmentPlan : Entity
 {
-    public Guid PatientId { get; private set; } // Alterado de int para Guid
+    public Guid PatientId { get; private set; }
     public Patient Patient { get; private set; } = null!;
 
     public string Description { get; private set; } = string.Empty;
@@ -51,4 +51,13 @@ public sealed class TreatmentPlan : Entity
         Status = TreatmentPlanStatus.Completed;
         UpdatedAt = DateTime.UtcNow;
     }
+}
+
+public enum TreatmentPlanStatus
+{
+    Draft = 1,
+    Approved = 2,
+    InProgress = 3,
+    Completed = 4,
+    Cancelled = 5
 }
