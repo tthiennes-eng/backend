@@ -51,9 +51,9 @@ public class AuthService : IAuthService
             return Result<TokenDto>.Failure("Credenciais inválidas.");
         }
 
-        if (user.Status == 1) // Blocked
+        if (!user.IsActive) // Corrigido de 'Status == 1' para 'IsActive'
         {
-            _logger.LogWarning(">>> Falha: Conta bloqueada.");
+            _logger.LogWarning(">>> Falha: Conta inativa ou bloqueada.");
             return Result<TokenDto>.Failure("Sua conta está bloqueada.");
         }
 
@@ -65,11 +65,11 @@ public class AuthService : IAuthService
         var session = UserSession.Create(user.Id, refreshToken, 7, "127.0.0.1");
         await _sessionRepository.AddAsync(session);
 
-        user.UpdateLoginInfo();
+        user.UpdateLoginInfo(); // Certifique-se de que este método existe na User.cs
         user.ResetFailedLogin();
         await _userRepository.UpdateAsync(user);
 
-        var userDto = new UserDto(user.Id, user.Name, user.EmailAddress.Value, user.Role.ToString());
+        var userDto = new UserDto(user.Id, user.Name, user.EmailAddress.Value, user.Roles.FirstOrDefault().ToString() ?? "Student");
         return Result<TokenDto>.Ok(new TokenDto(accessToken, refreshToken, userDto));
     }
 
@@ -81,7 +81,7 @@ public class AuthService : IAuthService
             return Result<TokenDto>.Failure("Sessão inválida.");
 
         var user = await _userRepository.GetByIdAsync(session.UserId);
-        if (user == null || user.Status != 0)
+        if (user == null || !user.IsActive) // Corrigido de 'Status != 0'
             return Result<TokenDto>.Failure("Usuário inválido.");
 
         session.Revoke();
@@ -93,7 +93,7 @@ public class AuthService : IAuthService
         var newSession = UserSession.Create(user.Id, newRefreshToken, 7, session.CreatedByIp);
         await _sessionRepository.AddAsync(newSession);
 
-        var userDto = new UserDto(user.Id, user.Name, user.EmailAddress.Value, user.Role.ToString());
+        var userDto = new UserDto(user.Id, user.Name, user.EmailAddress.Value, user.Roles.FirstOrDefault().ToString() ?? "Student");
         return Result<TokenDto>.Ok(new TokenDto(newAccessToken, newRefreshToken, userDto));
     }
 

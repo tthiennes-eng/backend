@@ -82,4 +82,10 @@ public class User : Entity
     public void ConfirmEmail() => EmailConfirmed = true;
     public void IncrementFailedLogin() => FailedLoginAttempts++;
     public void ResetFailedLogin() => FailedLoginAttempts = 0;
+
+    public void UpdateLoginInfo()
+    {
+        LastLoginAt = DateTime.UtcNow;
+        FailedLoginAttempts = 0;
+    }
 }
