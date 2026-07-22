@@ -18,6 +18,7 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> GetByEmailAsync(string email)
     {
+        // PostgreSQL: u.email (minúsculo conforme configurado no UserConfiguration)
         return await _context.Users
             .FirstOrDefaultAsync(u => u.EmailAddress.Value == email.ToLower());
     }
@@ -33,6 +34,7 @@ public class UserRepository : IUserRepository
 
         if (role.HasValue)
         {
+            // Verifica se a lista de Roles (JSONB) contém o papel
             query = query.Where(u => u.Roles.Contains(role.Value));
         }
 
