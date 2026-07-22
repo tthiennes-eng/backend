@@ -37,27 +37,23 @@ public class AuthService : IAuthService
 
         if (user == null)
         {
-            _logger.LogWarning(">>> Falha: Usuário não encontrado no banco.");
+            _logger.LogWarning(">>> Falha: Usuário não encontrado.");
             return Result<TokenDto>.Failure("Credenciais inválidas.");
         }
 
-        bool passwordValid = _passwordHasher.VerifyPassword(loginDto.Password, user.PasswordHash);
-
-        if (!passwordValid)
+        if (!_passwordHasher.VerifyPassword(loginDto.Password, user.PasswordHash))
         {
-            _logger.LogWarning(">>> Falha: Senha incorreta para {Email}.", loginDto.Email);
+            _logger.LogWarning(">>> Falha: Senha incorreta.");
             user.IncrementFailedLogin();
             await _userRepository.UpdateAsync(user);
             return Result<TokenDto>.Failure("Credenciais inválidas.");
         }
 
-        if (!user.IsActive) // Sincronizado: IsActive em vez de Status
+        if (!user.IsActive)
         {
-            _logger.LogWarning(">>> Falha: Conta inativa ou bloqueada.");
+            _logger.LogWarning(">>> Falha: Conta inativa.");
             return Result<TokenDto>.Failure("Sua conta está bloqueada.");
         }
-
-        _logger.LogInformation(">>> Sucesso: Login realizado para {Email}.", loginDto.Email);
 
         var accessToken = _tokenService.GenerateAccessToken(user);
         var refreshToken = _tokenService.GenerateRefreshToken();
@@ -69,7 +65,10 @@ public class AuthService : IAuthService
         user.ResetFailedLogin();
         await _userRepository.UpdateAsync(user);
 
-        var userDto = new UserDto(user.Id, user.Name, user.EmailAddress.Value, user.Roles.FirstOrDefault().ToString() ?? "Student");
+        // Mapeia o papel para o formato que o Flutter entende
+        var flutterRole = MapRoleToFlutter(user.Role);
+        var userDto = new UserDto(user.Id, user.Name, user.EmailAddress.Value, flutterRole);
+
         return Result<TokenDto>.Ok(new TokenDto(accessToken, refreshToken, userDto));
     }
 
@@ -81,7 +80,7 @@ public class AuthService : IAuthService
             return Result<TokenDto>.Failure("Sessão inválida.");
 
         var user = await _userRepository.GetByIdAsync(session.UserId);
-        if (user == null || !user.IsActive) // Sincronizado
+        if (user == null || !user.IsActive)
             return Result<TokenDto>.Failure("Usuário inválido.");
 
         session.Revoke();
@@ -93,7 +92,7 @@ public class AuthService : IAuthService
         var newSession = UserSession.Create(user.Id, newRefreshToken, 7, session.CreatedByIp);
         await _sessionRepository.AddAsync(newSession);
 
-        var userDto = new UserDto(user.Id, user.Name, user.EmailAddress.Value, user.Roles.FirstOrDefault().ToString() ?? "Student");
+        var userDto = new UserDto(user.Id, user.Name, user.EmailAddress.Value, MapRoleToFlutter(user.Role));
         return Result<TokenDto>.Ok(new TokenDto(newAccessToken, newRefreshToken, userDto));
     }
 
@@ -103,5 +102,10 @@ public class AuthService : IAuthService
         {
             await _sessionRepository.RevokeAllUserSessionsAsync(userGuid);
         }
+    }
+
+    private string MapRoleToFlutter(UserRole role)
+    {
+        return role.ToString().ToLower();
     }
 }

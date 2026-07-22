@@ -42,7 +42,7 @@ public class PatientConfiguration : IEntityTypeConfiguration<Patient>
             .HasColumnName("sexo")
             .HasMaxLength(1);
 
-        // Mapeamento de Endereço como JSONB com conversor explícito
+        // Mapeamento de Endereço (Objeto C# -> Coluna JSONB conforme SQL)
         builder.Property(p => p.Address)
             .HasColumnName("endereco_json")
             .HasColumnType("jsonb")
@@ -58,7 +58,6 @@ public class PatientConfiguration : IEntityTypeConfiguration<Patient>
         builder.Property(p => p.CreatedAt).HasColumnName("criado_em");
         builder.Property(p => p.UpdatedAt).HasColumnName("atualizado_em");
 
-        builder.Ignore(p => p.RG);
         builder.Ignore(p => p.IsActive);
 
         builder.HasIndex(p => p.FullName);

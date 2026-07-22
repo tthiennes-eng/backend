@@ -11,43 +11,24 @@ public class ClinicConfiguration : IEntityTypeConfiguration<Clinic>
         builder.ToTable("clinicas");
 
         builder.HasKey(c => c.Id);
+        builder.Property(c => c.Id).HasColumnName("id");
 
-        builder.Property(c => c.Name)
-            .IsRequired()
-            .HasMaxLength(100);
-
-        builder.Property(c => c.Description)
-            .HasMaxLength(1000);
+        builder.Property(c => c.Name).HasColumnName("nome").IsRequired().HasMaxLength(100);
+        builder.Property(c => c.Description).HasColumnName("descricao");
 
         builder.Property(c => c.Specialty)
-            .HasConversion<int>()
-            .IsRequired();
+            .HasColumnName("especialidade")
+            .HasConversion<int>();
 
-        builder.OwnsOne(c => c.Address, address =>
-        {
-            address.Property(a => a.Street).HasColumnName("endereco_rua").HasMaxLength(255);
-            address.Property(a => a.Number).HasColumnName("endereco_numero").HasMaxLength(20);
-            address.Property(a => a.Neighborhood).HasColumnName("endereco_bairro").HasMaxLength(100);
-            address.Property(a => a.City).HasColumnName("endereco_cidade").HasMaxLength(100);
-            address.Property(a => a.State).HasColumnName("endereco_estado").HasMaxLength(2);
-            address.Property(a => a.ZipCode).HasColumnName("endereco_cep").HasMaxLength(10);
-        });
+        builder.Property(c => c.IsActive).HasColumnName("ativo").HasDefaultValue(true);
+        builder.Property(c => c.CreatedAt).HasColumnName("criado_em");
+        builder.Property(c => c.UpdatedAt).HasColumnName("atualizado_em");
 
-        builder.Property(c => c.OpeningTime)
-            .IsRequired()
-            .HasMaxLength(5);
-
-        builder.Property(c => c.ClosingTime)
-            .IsRequired()
-            .HasMaxLength(5);
-
-        builder.Property(c => c.MaxCapacity)
-            .IsRequired();
-
-        builder.Property(c => c.CoordinatorUserId)
-            .IsRequired();
-
-        builder.Property(c => c.IsActive)
-            .HasDefaultValue(true);
+        // Ignora propriedades que não estão no SQL original
+        builder.Ignore(c => c.Address);
+        builder.Ignore(c => c.OpeningTime);
+        builder.Ignore(c => c.ClosingTime);
+        builder.Ignore(c => c.MaxCapacity);
+        builder.Ignore(c => c.CoordinatorUserId);
     }
 }

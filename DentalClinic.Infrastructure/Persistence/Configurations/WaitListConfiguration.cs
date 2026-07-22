@@ -10,24 +10,27 @@ public class WaitListConfiguration : IEntityTypeConfiguration<WaitListEntry>
     {
         builder.ToTable("lista_espera");
 
-        builder.HasKey(e => e.Id);
+        builder.HasKey(w => w.Id);
+        builder.Property(w => w.Id).HasColumnName("id");
 
-        builder.Property(e => e.Priority)
-            .IsRequired()
-            .HasMaxLength(20);
+        builder.Property(w => w.PatientId).HasColumnName("paciente_id");
+        builder.Property(w => w.ClinicId).HasColumnName("clinica_id");
 
-        builder.Property(e => e.Specialty)
-            .HasConversion<int>()
-            .IsRequired();
+        builder.Property(w => w.Specialty)
+            .HasColumnName("especialidade")
+            .HasConversion<int>();
 
-        builder.HasOne(e => e.Patient)
+        builder.Property(w => w.Priority).HasColumnName("prioridade").HasMaxLength(50);
+        builder.Property(w => w.Observation).HasColumnName("observacao");
+        builder.Property(w => w.IsResolved).HasColumnName("resolvido").HasDefaultValue(false);
+        builder.Property(w => w.CreatedAt).HasColumnName("criado_em");
+
+        builder.HasOne(w => w.Patient)
             .WithMany()
-            .HasForeignKey(e => e.PatientId);
+            .HasForeignKey(w => w.PatientId);
 
-        builder.HasOne(e => e.Clinic)
+        builder.HasOne(w => w.Clinic)
             .WithMany()
-            .HasForeignKey(e => e.ClinicId);
-
-        builder.HasIndex(e => e.IsResolved);
+            .HasForeignKey(w => w.ClinicId);
     }
 }

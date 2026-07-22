@@ -1,40 +1,30 @@
 using DentalClinic.Core.Domain.Entities;
 using FluentValidation;
 
-namespace DentalClinic.Core.Application.Validators
+namespace DentalClinic.Core.Application.Validators;
+
+public class PatientValidator : AbstractValidator<Patient>
 {
-    public class PatientValidator : AbstractValidator<Patient>
+    public PatientValidator()
     {
-        public PatientValidator()
-        {
-            // Regra para Nome: Não vazio e tamanho entre 3 e 150 caracteres
-            RuleFor(x => x.FullName)
-                .NotEmpty().WithMessage("O nome do paciente é obrigatório.")
-                .MinimumLength(3).WithMessage("O nome deve ter pelo menos 3 caracteres.")
-                .MaximumLength(150).WithMessage("O nome não pode exceder 150 caracteres.");
+        // Regra para Nome: Sincronizado com propriedade FullName
+        RuleFor(x => x.FullName)
+            .NotEmpty().WithMessage("O nome do paciente é obrigatório.")
+            .MinimumLength(3).WithMessage("O nome deve ter pelo menos 3 caracteres.")
+            .MaximumLength(255).WithMessage("O nome não pode exceder 255 caracteres.");
 
-            // Regra para CPF: Não vazio e formato válido (simples)
-            RuleFor(x => x.CPF)
-                .NotEmpty().WithMessage("O CPF é obrigatório.")
-                .Matches(@"^\d{3}\.\d{3}\.\d{3}-\d{2}$|^\d{11}$")
-                .WithMessage("O CPF deve estar no formato XXX.XXX.XXX-XX ou conter 11 dígitos.");
+        RuleFor(x => x.CPF)
+            .NotEmpty().WithMessage("O CPF é obrigatório.")
+            .Matches(@"^\d{11}$|^\d{3}\.\d{3}\.\d{3}-\d{2}$")
+            .WithMessage("O CPF deve conter 11 dígitos.");
 
-            // Regra para Email: Não vazio e formato válido de email
-            RuleFor(x => x.Email)
-                .NotEmpty().WithMessage("O email é obrigatório.")
-                .EmailAddress().WithMessage("O formato do email é inválido.")
-                .MaximumLength(100).WithMessage("O email não pode exceder 100 caracteres.");
+        RuleFor(x => x.Email)
+            .NotEmpty().WithMessage("O email é obrigatório.")
+            .EmailAddress().WithMessage("O formato do email é inválido.");
 
-            // Regra para Telefone: Não vazio e formato básico
-            RuleFor(x => x.Phone)
-                .NotEmpty().WithMessage("O telefone é obrigatório.")
-                .Matches(@"^\(\d{2}\)\s?\d{4,5}-?\d{4}$|^\d{10,11}$")
-                .WithMessage("O telefone deve estar no formato (XX) XXXXX-XXXX ou conter 10-11 dígitos.");
-            
-            // Regra opcional para Data de Nascimento
-            RuleFor(x => x.BirthDate)
-                .LessThan(DateTime.Now.AddYears(-18)).WithMessage("O paciente deve ser maior de 18 anos.")
-                .When(x => x.BirthDate != default);
-        }
+        // Regra para Data de Nascimento: Sincronizado com propriedade BirthDate
+        RuleFor(x => x.BirthDate)
+            .NotEmpty().WithMessage("A data de nascimento é obrigatória.")
+            .LessThan(DateTime.Now).WithMessage("A data de nascimento deve ser no passado.");
     }
 }
