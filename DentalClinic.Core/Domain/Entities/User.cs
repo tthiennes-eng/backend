@@ -9,13 +9,13 @@ public class User : Entity
 {
     [Required]
     [MaxLength(255)]
-    public string Name { get; set; } = string.Empty; // Mapeado para nome_completo no config
+    public string Name { get; set; } = string.Empty;
 
     [Required]
     public Email EmailAddress { get; set; } = null!;
 
     [Required]
-    public string PasswordHash { get; set; } = string.Empty; // Mapeado para senha_hash
+    public string PasswordHash { get; set; } = string.Empty;
 
     public CPF? CPF { get; set; }
 
@@ -30,16 +30,12 @@ public class User : Entity
 
     public List<UserRole> Roles { get; set; } = new();
 
-    public bool IsActive { get; set; } = true; // Mapeado para 'ativo'
+    public bool IsActive { get; set; } = true;
 
     public bool EmailConfirmed { get; set; } = false;
     public int FailedLoginAttempts { get; set; } = 0;
     public DateTime? LastLoginAt { get; set; }
     public DateTime? BlockedAt { get; set; }
-
-    // Relacionamentos
-    public ICollection<Appointment>? Appointments { get; set; }
-    public ICollection<Evolution>? Evolutions { get; set; }
 
     protected User()
     {

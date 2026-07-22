@@ -51,7 +51,7 @@ public class AuthService : IAuthService
             return Result<TokenDto>.Failure("Credenciais inválidas.");
         }
 
-        if (!user.IsActive) // Corrigido de 'Status' para 'IsActive'
+        if (!user.IsActive) // Sincronizado: IsActive em vez de Status
         {
             _logger.LogWarning(">>> Falha: Conta inativa ou bloqueada.");
             return Result<TokenDto>.Failure("Sua conta está bloqueada.");
@@ -81,7 +81,7 @@ public class AuthService : IAuthService
             return Result<TokenDto>.Failure("Sessão inválida.");
 
         var user = await _userRepository.GetByIdAsync(session.UserId);
-        if (user == null || !user.IsActive) // Corrigido de 'Status' para 'IsActive'
+        if (user == null || !user.IsActive) // Sincronizado
             return Result<TokenDto>.Failure("Usuário inválido.");
 
         session.Revoke();
