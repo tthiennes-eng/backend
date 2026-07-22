@@ -8,7 +8,7 @@ namespace DentalClinic.Core.Application.Validators
         public PatientValidator()
         {
             // Regra para Nome: Não vazio e tamanho entre 3 e 150 caracteres
-            RuleFor(x => x.Name)
+            RuleFor(x => x.FullName)
                 .NotEmpty().WithMessage("O nome do paciente é obrigatório.")
                 .MinimumLength(3).WithMessage("O nome deve ter pelo menos 3 caracteres.")
                 .MaximumLength(150).WithMessage("O nome não pode exceder 150 caracteres.");
@@ -31,10 +31,10 @@ namespace DentalClinic.Core.Application.Validators
                 .Matches(@"^\(\d{2}\)\s?\d{4,5}-?\d{4}$|^\d{10,11}$")
                 .WithMessage("O telefone deve estar no formato (XX) XXXXX-XXXX ou conter 10-11 dígitos.");
             
-            // Regra opcional para Data de Nascimento (se quiser garantir que seja maior de idade ou data válida)
-            RuleFor(x => x.DateOfBirth)
-                .LessThan(DateTime.Now.AddYears(-18)).WithMessage("O paciente deve ser maior de 18 anos (ou ajuste a validação conforme necessário).")
-                .When(x => x.DateOfBirth != default);
+            // Regra opcional para Data de Nascimento
+            RuleFor(x => x.BirthDate)
+                .LessThan(DateTime.Now.AddYears(-18)).WithMessage("O paciente deve ser maior de 18 anos.")
+                .When(x => x.BirthDate != default);
         }
     }
 }
