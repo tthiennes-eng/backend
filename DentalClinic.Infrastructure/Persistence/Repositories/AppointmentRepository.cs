@@ -15,7 +15,7 @@ public class AppointmentRepository : IAppointmentRepository
 
     public async Task<Appointment?> GetByIdAsync(Guid id)
     {
-        return await _context.Set<Appointment>()
+        return await _context.Appointments
             .Include(a => a.Patient)
             .Include(a => a.Doctor)
             .FirstOrDefaultAsync(a => a.Id == id);
@@ -23,7 +23,7 @@ public class AppointmentRepository : IAppointmentRepository
 
     public async Task<IEnumerable<Appointment>> GetByRangeAsync(DateTime start, DateTime end, Guid? clinicId)
     {
-        var query = _context.Set<Appointment>()
+        var query = _context.Appointments
             .Include(a => a.Patient)
             .Include(a => a.Doctor)
             .Where(a => a.StartTime >= start && a.StartTime <= end);
@@ -38,13 +38,13 @@ public class AppointmentRepository : IAppointmentRepository
 
     public async Task AddAsync(Appointment appointment)
     {
-        await _context.Set<Appointment>().AddAsync(appointment);
+        await _context.Appointments.AddAsync(appointment);
         await _context.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(Appointment appointment)
     {
-        _context.Set<Appointment>().Update(appointment);
+        _context.Appointments.Update(appointment);
         await _context.SaveChangesAsync();
     }
 }

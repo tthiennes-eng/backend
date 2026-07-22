@@ -2,9 +2,6 @@ using DentalClinic.Core.Domain.Entities;
 
 namespace DentalClinic.Core.Domain.Repositories;
 
-/// <summary>
-/// Interface para persistência de agendamentos.
-/// </summary>
 public interface IAppointmentRepository
 {
     Task<Appointment?> GetByIdAsync(Guid id);
