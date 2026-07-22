@@ -51,6 +51,16 @@ public sealed class Appointment : Entity
         Status = status;
         UpdatedAt = DateTime.UtcNow;
     }
+
+    public void Reschedule(DateTime newStart, DateTime newEnd)
+    {
+        if (newEnd <= newStart)
+            throw new InvalidOperationException("End time must be after start time.");
+
+        StartTime = newStart;
+        EndTime = newEnd;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }
 
 public enum AppointmentStatus

@@ -13,7 +13,7 @@ public class WaitListRepository : IWaitListRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<WaitListEntry>> GetWaitListByClinicAsync(Guid clinicId)
+    public async Task<IEnumerable<WaitListEntry>> GetActiveByClinicAsync(Guid clinicId)
     {
         return await _context.WaitListEntries
             .Include(w => w.Patient)
@@ -22,9 +22,31 @@ public class WaitListRepository : IWaitListRepository
             .ToListAsync();
     }
 
-    public async Task AddToWaitListAsync(WaitListEntry entry)
+    public async Task<IEnumerable<WaitListEntry>> GetActiveBySpecialtyAsync(DentalClinic.Core.Domain.ValueObjects.Specialty specialty)
+    {
+        return await _context.WaitListEntries
+            .Include(w => w.Patient)
+            .Where(w => w.Specialty == specialty && !w.IsResolved)
+            .OrderBy(w => w.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<WaitListEntry?> GetByIdAsync(Guid id)
+    {
+        return await _context.WaitListEntries
+            .Include(w => w.Patient)
+            .FirstOrDefaultAsync(w => w.Id == id);
+    }
+
+    public async Task AddAsync(WaitListEntry entry)
     {
         await _context.WaitListEntries.AddAsync(entry);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task UpdateAsync(WaitListEntry entry)
+    {
+        _context.WaitListEntries.Update(entry);
         await _context.SaveChangesAsync();
     }
 
