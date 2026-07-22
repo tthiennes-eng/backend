@@ -44,13 +44,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.Phone).HasColumnName("telefone").HasMaxLength(20);
         builder.Property(u => u.DateOfBirth).HasColumnName("data_nascimento");
 
-        // Mapeamos o Status (int) para a coluna 'ativo' (bool) com conversão
-        builder.Property(u => u.Status)
+        // Sincronizado com a nova propriedade IsActive (bool) da entidade User
+        builder.Property(u => u.IsActive)
             .HasColumnName("ativo")
-            .HasConversion(
-                v => v == 0, // Se Status for 0 (Active), salva como true
-                v => v ? 0 : 1 // Se for true, volta para 0
-            );
+            .HasDefaultValue(true);
 
         builder.Property(u => u.FailedLoginAttempts).HasColumnName("tentativas_falhas");
         builder.Property(u => u.LastLoginAt).HasColumnName("ultimo_login");
@@ -60,7 +57,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         // Roles como JSONB
         builder.Property(u => u.Roles)
-            .HasColumnName("perfis_json") // Ajustado ou use a coluna perfil_id se preferir
+            .HasColumnName("perfis_json")
             .HasColumnType("jsonb");
+
+        // Ignora a Role única se ela for apenas um helper da lista de Roles
+        builder.Ignore(u => u.Role);
     }
 }
