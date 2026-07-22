@@ -37,23 +37,27 @@ public class AuthService : IAuthService
 
         if (user == null)
         {
-            _logger.LogWarning(">>> Falha: Usuário não encontrado.");
+            _logger.LogWarning(">>> Falha: Usuário não encontrado no banco.");
             return Result<TokenDto>.Failure("Credenciais inválidas.");
         }
 
-        if (!_passwordHasher.VerifyPassword(loginDto.Password, user.PasswordHash))
+        bool passwordValid = _passwordHasher.VerifyPassword(loginDto.Password, user.PasswordHash);
+
+        if (!passwordValid)
         {
-            _logger.LogWarning(">>> Falha: Senha incorreta.");
+            _logger.LogWarning(">>> Falha: Senha incorreta para {Email}.", loginDto.Email);
             user.IncrementFailedLogin();
             await _userRepository.UpdateAsync(user);
             return Result<TokenDto>.Failure("Credenciais inválidas.");
         }
 
-        if (!user.IsActive)
+        if (!user.IsActive) // Sincronizado com User.cs
         {
-            _logger.LogWarning(">>> Falha: Conta inativa.");
+            _logger.LogWarning(">>> Falha: Conta inativa ou bloqueada.");
             return Result<TokenDto>.Failure("Sua conta está bloqueada.");
         }
+
+        _logger.LogInformation(">>> Sucesso: Login realizado para {Email}.", loginDto.Email);
 
         var accessToken = _tokenService.GenerateAccessToken(user);
         var refreshToken = _tokenService.GenerateRefreshToken();
@@ -65,10 +69,8 @@ public class AuthService : IAuthService
         user.ResetFailedLogin();
         await _userRepository.UpdateAsync(user);
 
-        // Mapeia o papel para o formato que o Flutter entende
-        var flutterRole = MapRoleToFlutter(user.Role);
-        var userDto = new UserDto(user.Id, user.Name, user.EmailAddress.Value, flutterRole);
-
+        // Mapeamento de Role para string para o DTO
+        var userDto = new UserDto(user.Id, user.Name, user.EmailAddress.Value, user.Role.ToString());
         return Result<TokenDto>.Ok(new TokenDto(accessToken, refreshToken, userDto));
     }
 
@@ -92,7 +94,7 @@ public class AuthService : IAuthService
         var newSession = UserSession.Create(user.Id, newRefreshToken, 7, session.CreatedByIp);
         await _sessionRepository.AddAsync(newSession);
 
-        var userDto = new UserDto(user.Id, user.Name, user.EmailAddress.Value, MapRoleToFlutter(user.Role));
+        var userDto = new UserDto(user.Id, user.Name, user.EmailAddress.Value, user.Role.ToString());
         return Result<TokenDto>.Ok(new TokenDto(newAccessToken, newRefreshToken, userDto));
     }
 
@@ -102,10 +104,5 @@ public class AuthService : IAuthService
         {
             await _sessionRepository.RevokeAllUserSessionsAsync(userGuid);
         }
-    }
-
-    private string MapRoleToFlutter(UserRole role)
-    {
-        return role.ToString().ToLower();
     }
 }
