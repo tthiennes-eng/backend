@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 namespace DentalClinic.Core.Domain.Entities;
 
 /// <summary>
@@ -5,7 +9,7 @@ namespace DentalClinic.Core.Domain.Entities;
 /// </summary>
 public sealed class Odontogram : Entity
 {
-    public int PatientId { get; private set; }
+    public Guid PatientId { get; private set; } // Alterado de int para Guid
     public Patient Patient { get; private set; } = null!;
 
     public List<ToothCondition> Teeth { get; private set; } = new();
@@ -14,7 +18,7 @@ public sealed class Odontogram : Entity
 
     private Odontogram() { }
 
-    public static Odontogram Create(int patientId, Guid userId)
+    public static Odontogram Create(Guid patientId, Guid userId)
     {
         return new Odontogram
         {

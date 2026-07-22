@@ -1,3 +1,5 @@
+using System;
+
 namespace DentalClinic.Core.Domain.Entities;
 
 /// <summary>
@@ -5,7 +7,7 @@ namespace DentalClinic.Core.Domain.Entities;
 /// </summary>
 public sealed class MedicalCertificate : Entity
 {
-    public int PatientId { get; private set; }
+    public Guid PatientId { get; private set; } // Alterado de int para Guid
     public Patient Patient { get; private set; } = null!;
 
     public Guid DoctorId { get; private set; }
@@ -19,7 +21,7 @@ public sealed class MedicalCertificate : Entity
     private MedicalCertificate() { }
 
     public static MedicalCertificate Create(
-        int patientId,
+        Guid patientId,
         Guid doctorId,
         Guid clinicId,
         string content,

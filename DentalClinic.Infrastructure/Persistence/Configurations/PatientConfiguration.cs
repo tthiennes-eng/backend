@@ -11,10 +11,12 @@ public class PatientConfiguration : IEntityTypeConfiguration<Patient>
         builder.ToTable("pacientes");
 
         builder.HasKey(p => p.Id);
+        builder.Property(p => p.Id).HasColumnName("id");
 
-        builder.Property(p => p.Name)
+        builder.Property(p => p.FullName)
+            .HasColumnName("nome_completo")
             .IsRequired()
-            .HasMaxLength(150);
+            .HasMaxLength(255);
 
         builder.Property(p => p.CPF)
             .HasColumnName("cpf")
@@ -24,33 +26,37 @@ public class PatientConfiguration : IEntityTypeConfiguration<Patient>
         builder.HasIndex(p => p.CPF).IsUnique();
 
         builder.Property(p => p.Email)
-            .IsRequired()
-            .HasMaxLength(100)
-            .HasColumnName("email");
+            .HasColumnName("email")
+            .HasMaxLength(255);
 
         builder.Property(p => p.Phone)
-            .IsRequired()
+            .HasColumnName("telefone")
             .HasMaxLength(20);
 
-        builder.Property(p => p.DateOfBirth)
+        builder.Property(p => p.BirthDate)
+            .HasColumnName("data_nascimento")
             .IsRequired();
 
+        builder.Property(p => p.Gender)
+            .HasColumnName("sexo")
+            .HasMaxLength(1);
+
+        // Mapeamento de Endereço como JSONB conforme DATABASE_SCHEMA.sql
         builder.Property(p => p.Address)
-            .HasMaxLength(200);
+            .HasColumnName("endereco_json")
+            .HasColumnType("jsonb");
 
-        builder.Property(p => p.Neighborhood)
-            .HasMaxLength(100);
+        builder.Property(p => p.LgpdConsent)
+            .HasColumnName("consentimento_lgpd")
+            .HasDefaultValue(false);
 
-        builder.Property(p => p.City)
-            .HasMaxLength(100);
+        builder.Property(p => p.IsActive)
+            .HasColumnName("ativo")
+            .HasDefaultValue(true);
 
-        builder.Property(p => p.State)
-            .HasMaxLength(2);
+        builder.Property(p => p.CreatedAt).HasColumnName("criado_em");
+        builder.Property(p => p.UpdatedAt).HasColumnName("atualizado_em");
 
-        builder.Property(p => p.ZipCode)
-            .HasMaxLength(9);
-
-        // Auditoria LGPD: Índice para buscas frequentes por nome
-        builder.HasIndex(p => p.Name);
+        builder.HasIndex(p => p.FullName);
     }
 }

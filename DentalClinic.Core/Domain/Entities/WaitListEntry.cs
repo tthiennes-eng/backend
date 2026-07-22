@@ -1,3 +1,6 @@
+using System;
+using DentalClinic.Core.Domain.ValueObjects;
+
 namespace DentalClinic.Core.Domain.Entities;
 
 /// <summary>
@@ -5,7 +8,7 @@ namespace DentalClinic.Core.Domain.Entities;
 /// </summary>
 public sealed class WaitListEntry : Entity
 {
-    public int PatientId { get; private set; }
+    public Guid PatientId { get; private set; } // Alterado de int para Guid
     public Patient Patient { get; private set; } = null!;
 
     public Guid ClinicId { get; private set; }
@@ -18,7 +21,7 @@ public sealed class WaitListEntry : Entity
 
     private WaitListEntry() { }
 
-    public static WaitListEntry Create(int patientId, Guid clinicId, Specialty specialty, string priority, string? observation)
+    public static WaitListEntry Create(Guid patientId, Guid clinicId, Specialty specialty, string priority, string? observation)
     {
         return new WaitListEntry
         {

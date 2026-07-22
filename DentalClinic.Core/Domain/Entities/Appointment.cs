@@ -1,10 +1,11 @@
+using System;
 using DentalClinic.Core.Domain.ValueObjects;
 
 namespace DentalClinic.Core.Domain.Entities;
 
 public sealed class Appointment : Entity
 {
-    public int PatientId { get; private set; }
+    public Guid PatientId { get; private set; } // Alterado de int para Guid
     public Patient Patient { get; private set; } = null!;
 
     public Guid DoctorId { get; private set; }
@@ -21,7 +22,7 @@ public sealed class Appointment : Entity
     private Appointment() { }
 
     public static Appointment Create(
-        int patientId,
+        Guid patientId,
         Guid doctorId,
         DateTime startTime,
         DateTime endTime,
@@ -50,24 +51,4 @@ public sealed class Appointment : Entity
         Status = status;
         UpdatedAt = DateTime.UtcNow;
     }
-
-    public void Reschedule(DateTime newStart, DateTime newEnd)
-    {
-        if (newEnd <= newStart)
-            throw new InvalidOperationException("End time must be after start time.");
-
-        StartTime = newStart;
-        EndTime = newEnd;
-        UpdatedAt = DateTime.UtcNow;
-    }
-}
-
-public enum AppointmentStatus
-{
-    Scheduled = 1,
-    Confirmed = 2,
-    InProgress = 3,
-    Completed = 4,
-    Cancelled = 5,
-    Missed = 6
 }

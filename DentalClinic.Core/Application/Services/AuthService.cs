@@ -7,10 +7,6 @@ using Microsoft.Extensions.Logging;
 
 namespace DentalClinic.Core.Application.Services;
 
-/// <summary>
-/// Implementação do serviço de autenticação.
-/// Gerencia o ciclo de vida da sessão do usuário e segurança de acesso.
-/// </summary>
 public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
@@ -35,41 +31,45 @@ public class AuthService : IAuthService
 
     public async Task<Result<TokenDto>> AuthenticateAsync(LoginDto loginDto)
     {
-        _logger.LogInformation("Tentativa de login para o email: {Email}", loginDto.Email);
+        _logger.LogInformation(">>> Tentativa de login: {Email}", loginDto.Email);
 
         var user = await _userRepository.GetByEmailAsync(loginDto.Email);
 
-        if (user == null || !_passwordHasher.VerifyPassword(loginDto.Password, user.PasswordHash))
+        if (user == null)
         {
-            if (user != null)
-            {
-                user.IncrementFailedLogin();
-                await _userRepository.UpdateAsync(user);
-            }
+            _logger.LogWarning(">>> Falha: Usuário não encontrado no banco.");
+            return Result<TokenDto>.Failure("Credenciais inválidas.");
+        }
 
-            _logger.LogWarning("Falha na autenticação para o usuário: {Email}", loginDto.Email);
+        bool passwordValid = _passwordHasher.VerifyPassword(loginDto.Password, user.PasswordHash);
+
+        if (!passwordValid)
+        {
+            _logger.LogWarning(">>> Falha: Senha incorreta para {Email}.", loginDto.Email);
+            user.IncrementFailedLogin();
+            await _userRepository.UpdateAsync(user);
             return Result<TokenDto>.Failure("Credenciais inválidas.");
         }
 
         if (user.Status == 1) // Blocked
         {
-            return Result<TokenDto>.Failure("Sua conta está bloqueada. Entre em contato com o administrador.");
+            _logger.LogWarning(">>> Falha: Conta bloqueada.");
+            return Result<TokenDto>.Failure("Sua conta está bloqueada.");
         }
 
-        // Gera os tokens
+        _logger.LogInformation(">>> Sucesso: Login realizado para {Email}.", loginDto.Email);
+
         var accessToken = _tokenService.GenerateAccessToken(user);
         var refreshToken = _tokenService.GenerateRefreshToken();
 
-        // Persiste a sessão (Refresh Token)
-        var session = UserSession.Create(user.Id, refreshToken, 7, "0.0.0.0"); // TODO: Obter IP do contexto
+        var session = UserSession.Create(user.Id, refreshToken, 7, "127.0.0.1");
         await _sessionRepository.AddAsync(session);
 
-        // Atualiza info de login
         user.UpdateLoginInfo();
+        user.ResetFailedLogin();
         await _userRepository.UpdateAsync(user);
 
         var userDto = new UserDto(user.Id, user.Name, user.EmailAddress.Value, user.Role.ToString());
-
         return Result<TokenDto>.Ok(new TokenDto(accessToken, refreshToken, userDto));
     }
 
@@ -78,30 +78,22 @@ public class AuthService : IAuthService
         var session = await _sessionRepository.GetByTokenAsync(request.RefreshToken);
 
         if (session == null || !session.IsActive)
-        {
-            return Result<TokenDto>.Failure("Sessão inválida ou expirada.");
-        }
+            return Result<TokenDto>.Failure("Sessão inválida.");
 
         var user = await _userRepository.GetByIdAsync(session.UserId);
         if (user == null || user.Status != 0)
-        {
-            return Result<TokenDto>.Failure("Usuário não encontrado ou inativo.");
-        }
+            return Result<TokenDto>.Failure("Usuário inválido.");
 
-        // Revoga a sessão atual
         session.Revoke();
         await _sessionRepository.UpdateAsync(session);
 
-        // Gera novos tokens
         var newAccessToken = _tokenService.GenerateAccessToken(user);
         var newRefreshToken = _tokenService.GenerateRefreshToken();
 
-        // Cria nova sessão
         var newSession = UserSession.Create(user.Id, newRefreshToken, 7, session.CreatedByIp);
         await _sessionRepository.AddAsync(newSession);
 
         var userDto = new UserDto(user.Id, user.Name, user.EmailAddress.Value, user.Role.ToString());
-
         return Result<TokenDto>.Ok(new TokenDto(newAccessToken, newRefreshToken, userDto));
     }
 
@@ -110,7 +102,6 @@ public class AuthService : IAuthService
         if (Guid.TryParse(userId, out var userGuid))
         {
             await _sessionRepository.RevokeAllUserSessionsAsync(userGuid);
-            _logger.LogInformation("Todas as sessões do usuário {UserId} foram revogadas.", userId);
         }
     }
 }

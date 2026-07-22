@@ -7,17 +7,14 @@ namespace DentalClinic.Core.Domain.Entities
     public class Attachment
     {
         [Key]
-        public int Id { get; set; }
+        public Guid Id { get; set; } // Alterado para Guid se necessário
 
-        public int PatientId { get; set; }
+        public Guid PatientId { get; set; } // Alterado de int para Guid
 
         [ForeignKey("PatientId")]
         public Patient? Patient { get; set; }
 
-        public int? MedicalRecordId { get; set; }
-
-        [ForeignKey("MedicalRecordId")]
-        public MedicalRecord? MedicalRecord { get; set; }
+        public Guid? MedicalRecordId { get; set; } // Alterado de int? para Guid?
 
         [Required]
         [MaxLength(255)]
@@ -36,6 +33,6 @@ namespace DentalClinic.Core.Domain.Entities
 
         public DateTime UploadDate { get; set; } = DateTime.UtcNow;
 
-        public int? UploadedByUserId { get; set; }
+        public Guid? UploadedByUserId { get; set; } // Alterado de int? para Guid?
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Text.Json;
 
 namespace DentalClinic.Core.Domain.Entities;
@@ -8,12 +9,11 @@ namespace DentalClinic.Core.Domain.Entities;
 /// </summary>
 public sealed class Anamnese : Entity
 {
-    public int PatientId { get; private set; }
+    public Guid PatientId { get; private set; } // Alterado de int para Guid
     public Patient Patient { get; private set; } = null!;
 
     /// <summary>
     /// Respostas do questionário armazenadas em formato JSON para flexibilidade.
-    /// Permite que a universidade altere as perguntas sem mudar o esquema do banco.
     /// </summary>
     public string RespostasJson { get; private set; } = "{}";
 
@@ -22,7 +22,7 @@ public sealed class Anamnese : Entity
 
     private Anamnese() { }
 
-    public static Anamnese Create(int patientId, string respostasJson, Guid criadoPorId)
+    public static Anamnese Create(Guid patientId, string respostasJson, Guid criadoPorId)
     {
         return new Anamnese
         {

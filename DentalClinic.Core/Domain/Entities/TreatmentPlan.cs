@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace DentalClinic.Core.Domain.Entities;
 
 /// <summary>
@@ -6,7 +9,7 @@ namespace DentalClinic.Core.Domain.Entities;
 /// </summary>
 public sealed class TreatmentPlan : Entity
 {
-    public int PatientId { get; private set; }
+    public Guid PatientId { get; private set; } // Alterado de int para Guid
     public Patient Patient { get; private set; } = null!;
 
     public string Description { get; private set; } = string.Empty;
@@ -20,7 +23,7 @@ public sealed class TreatmentPlan : Entity
 
     private TreatmentPlan() { }
 
-    public static TreatmentPlan Create(int patientId, Guid createdByUserId, string description)
+    public static TreatmentPlan Create(Guid patientId, Guid createdByUserId, string description)
     {
         return new TreatmentPlan
         {
@@ -48,13 +51,4 @@ public sealed class TreatmentPlan : Entity
         Status = TreatmentPlanStatus.Completed;
         UpdatedAt = DateTime.UtcNow;
     }
-}
-
-public enum TreatmentPlanStatus
-{
-    Draft = 1,
-    Approved = 2,
-    InProgress = 3,
-    Completed = 4,
-    Cancelled = 5
 }

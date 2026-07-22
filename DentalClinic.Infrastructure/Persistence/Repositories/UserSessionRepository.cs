@@ -15,25 +15,25 @@ public class UserSessionRepository : IUserSessionRepository
 
     public async Task<UserSession?> GetByTokenAsync(string token)
     {
-        return await _context.Set<UserSession>()
-            .FirstOrDefaultAsync(s => s.Token == token);
+        return await _context.UserSessions
+            .FirstOrDefaultAsync(s => s.Token == token && !s.IsRevoked);
     }
 
     public async Task AddAsync(UserSession session)
     {
-        await _context.Set<UserSession>().AddAsync(session);
+        await _context.UserSessions.AddAsync(session);
         await _context.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(UserSession session)
     {
-        _context.Set<UserSession>().Update(session);
+        _context.UserSessions.Update(session);
         await _context.SaveChangesAsync();
     }
 
     public async Task RevokeAllUserSessionsAsync(Guid userId)
     {
-        var sessions = await _context.Set<UserSession>()
+        var sessions = await _context.UserSessions
             .Where(s => s.UserId == userId && !s.IsRevoked)
             .ToListAsync();
 

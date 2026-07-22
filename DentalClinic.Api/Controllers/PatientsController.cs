@@ -5,9 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DentalClinic.Api.Controllers;
 
-/// <summary>
-/// Controller para gestão de pacientes.
-/// </summary>
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
@@ -22,11 +19,11 @@ public class PatientsController : ControllerBase
         _logger = logger;
     }
 
-    /// <summary>
-    /// Lista pacientes com paginação e filtro.
-    /// </summary>
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? searchTerm = null)
+    public async Task<IActionResult> Get(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery(Name = "search")] string? searchTerm = null) // Sincronizado com Flutter
     {
         var patients = await _patientRepository.GetAllAsync(page, pageSize, searchTerm);
         var total = await _patientRepository.CountAsync(searchTerm);
@@ -40,58 +37,37 @@ public class PatientsController : ControllerBase
         });
     }
 
-    /// <summary>
-    /// Busca um paciente pelo ID.
-    /// </summary>
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(int id)
+    public async Task<IActionResult> GetById(Guid id)
     {
         var patient = await _patientRepository.GetByIdAsync(id);
         if (patient == null) return NotFound();
-
         return Ok(patient);
     }
 
-    /// <summary>
-    /// Cadastra um novo paciente.
-    /// </summary>
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] Patient patient)
     {
-        await _patientRepository.AddAsync(patient);
-        return CreatedAtAction(nameof(GetById), new { id = patient.Id }, patient);
+        try
+        {
+            await _patientRepository.AddAsync(patient);
+            return CreatedAtAction(nameof(GetById), new { id = patient.Id }, patient);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao criar paciente.");
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
-    /// <summary>
-    /// Atualiza os dados de um paciente.
-    /// </summary>
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] Patient patient)
+    public async Task<IActionResult> Update(Guid id, [FromBody] Patient patient)
     {
         if (id != patient.Id) return BadRequest();
-
         var existing = await _patientRepository.GetByIdAsync(id);
         if (existing == null) return NotFound();
 
         await _patientRepository.UpdateAsync(patient);
-        return NoContent();
-    }
-
-    /// <summary>
-    /// Anonimiza os dados do paciente conforme a LGPD (Direito ao Esquecimento).
-    /// Apenas Administradores podem realizar esta ação.
-    /// </summary>
-    [HttpPost("{id}/anonymize")]
-    [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Anonymize(int id)
-    {
-        _logger.LogWarning("Solicitação de anonimização (LGPD) para o paciente {Id}", id);
-
-        var patient = await _patientRepository.GetByIdAsync(id);
-        if (patient == null) return NotFound();
-
-        await _patientRepository.AnonymizeAsync(id);
-
         return NoContent();
     }
 }

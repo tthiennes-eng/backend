@@ -1,34 +1,34 @@
-namespace DentalClinic.Core.Domain.Entities;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-/// <summary>
-/// Representa um arquivo anexo (Radiografia, Foto ou Documento) associado a um paciente.
-/// Seguindo os requisitos, o arquivo físico fica no Storage e apenas a referência no Banco.
-/// </summary>
-public sealed class Anexo : Entity
+namespace DentalClinic.Core.Domain.Entities
 {
-    public int PacienteId { get; private set; }
-    public Patient Paciente { get; private set; } = null!;
-
-    public string Nome { get; private set; } = string.Empty;
-    public string Tipo { get; private set; } = string.Empty; // 'Radiografia', 'Foto', 'Documento'
-    public string Url { get; private set; } = string.Empty;
-    public long Tamanho { get; private set; }
-
-    public Guid CriadoPorId { get; private set; }
-    public User CriadoPor { get; private set; } = null!;
-
-    private Anexo() { }
-
-    public static Anexo Create(int pacienteId, string nome, string tipo, string url, long tamanho, Guid criadoPorId)
+    public class Anexo
     {
-        return new Anexo
-        {
-            PacienteId = pacienteId,
-            Nome = nome,
-            Tipo = tipo,
-            Url = url,
-            Tamanho = tamanho,
-            CriadoPorId = criadoPorId
-        };
+        [Key]
+        public Guid Id { get; set; }
+
+        public Guid PatientId { get; set; } // Alterado de int para Guid
+
+        [ForeignKey("PatientId")]
+        public Patient? Patient { get; set; }
+
+        [Required]
+        [MaxLength(50)]
+        public string Tipo { get; set; } = string.Empty; // 'Radiografia', 'Foto', 'Documento'
+
+        [Required]
+        [MaxLength(255)]
+        public string NomeArquivo { get; set; } = string.Empty;
+
+        [Required]
+        public string UrlStorage { get; set; } = string.Empty;
+
+        public string? MetaData { get; set; } // Armazenado como string se não houver suporte a jsonb aqui
+
+        public DateTime CriadoEm { get; set; } = DateTime.UtcNow;
+
+        public Guid? CriadoPorId { get; set; } // Alterado de int? para Guid?
     }
 }

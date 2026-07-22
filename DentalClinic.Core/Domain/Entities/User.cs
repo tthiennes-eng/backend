@@ -29,9 +29,10 @@ public class User
 
     public Address? Address { get; set; }
 
-    public UserRole Role { get; set; } = UserRole.Student;
+    // Qualificação total para evitar ambiguidade com ValueObjects.UserRole
+    public DentalClinic.Core.Domain.Entities.UserRole Role { get; set; } = DentalClinic.Core.Domain.Entities.UserRole.Student;
 
-    public List<UserRole> Roles { get; set; } = new();
+    public List<DentalClinic.Core.Domain.Entities.UserRole> Roles { get; set; } = new();
 
     public int Status { get; set; } = 0; // 0 = Active, 1 = Blocked
 
@@ -48,23 +49,22 @@ public class User
 
     protected User()
     {
-        Roles = new List<UserRole>();
+        Roles = new List<DentalClinic.Core.Domain.Entities.UserRole>();
     }
 
-    public User(string name, Email email, string passwordHash, UserRole role = UserRole.Student)
+    public User(string name, Email email, string passwordHash, DentalClinic.Core.Domain.Entities.UserRole role = DentalClinic.Core.Domain.Entities.UserRole.Student)
     {
         Id = Guid.NewGuid();
         Name = name;
         EmailAddress = email;
         PasswordHash = passwordHash;
         Role = role;
-        Roles = new List<UserRole> { role };
+        Roles = new List<DentalClinic.Core.Domain.Entities.UserRole> { role };
         CreatedAt = DateTime.UtcNow;
         Status = 0;
     }
 
-    // Fábrica estática para criação controlada via Controller
-    public static User Create(string name, string email, string cpf, DateTime? dateOfBirth, string? phone, Address? address, UserRole role)
+    public static User Create(string name, string email, string cpf, DateTime? dateOfBirth, string? phone, Address? address, DentalClinic.Core.Domain.Entities.UserRole role)
     {
         return new User
         {
@@ -76,7 +76,7 @@ public class User
             Phone = phone,
             Address = address,
             Role = role,
-            Roles = new List<UserRole> { role },
+            Roles = new List<DentalClinic.Core.Domain.Entities.UserRole> { role },
             CreatedAt = DateTime.UtcNow,
             Status = 0
         };

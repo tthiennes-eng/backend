@@ -4,10 +4,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DentalClinic.Infrastructure.Persistence.Repositories;
 
-/// <summary>
-/// Implementação do repositório de lista de espera.
-/// Gerencia a fila de pacientes por clínica e especialidade.
-/// </summary>
 public class WaitListRepository : IWaitListRepository
 {
     private readonly ApplicationDbContext _context;
@@ -17,40 +13,28 @@ public class WaitListRepository : IWaitListRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<WaitListEntry>> GetActiveByClinicAsync(Guid clinicId)
+    public async Task<IEnumerable<WaitListEntry>> GetWaitListByClinicAsync(Guid clinicId)
     {
-        return await _context.Set<WaitListEntry>()
-            .Include(e => e.Patient)
-            .Where(e => e.ClinicId == clinicId && !e.IsResolved)
-            .OrderBy(e => e.CreatedAt)
+        return await _context.WaitListEntries
+            .Include(w => w.Patient)
+            .Where(w => w.ClinicId == clinicId && !w.IsResolved)
+            .OrderBy(w => w.CreatedAt)
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<WaitListEntry>> GetActiveBySpecialtyAsync(Specialty specialty)
+    public async Task AddToWaitListAsync(WaitListEntry entry)
     {
-        return await _context.Set<WaitListEntry>()
-            .Include(e => e.Patient)
-            .Where(e => e.Specialty == specialty && !e.IsResolved)
-            .OrderBy(e => e.CreatedAt)
-            .ToListAsync();
-    }
-
-    public async Task<WaitListEntry?> GetByIdAsync(Guid id)
-    {
-        return await _context.Set<WaitListEntry>()
-            .Include(e => e.Patient)
-            .FirstOrDefaultAsync(e => e.Id == id);
-    }
-
-    public async Task AddAsync(WaitListEntry entry)
-    {
-        await _context.Set<WaitListEntry>().AddAsync(entry);
+        await _context.WaitListEntries.AddAsync(entry);
         await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(WaitListEntry entry)
+    public async Task ResolveEntryAsync(Guid entryId)
     {
-        _context.Set<WaitListEntry>().Update(entry);
-        await _context.SaveChangesAsync();
+        var entry = await _context.WaitListEntries.FindAsync(entryId);
+        if (entry != null)
+        {
+            entry.Resolve();
+            await _context.SaveChangesAsync();
+        }
     }
 }
